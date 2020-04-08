@@ -74,6 +74,12 @@ class BowlerFile {
 		String email)
 		throws IOException, FileNotFoundException {
 
+		if( nickName == "" || fullName == "" || email == "" ){
+			// returns if any field is empty
+			System.out.println("Error: BowlerInfo not added due to some empty fields!");
+			return;
+		}
+
 		String data = nickName + "\t" + fullName + "\t" + email + "\n";
 
 		RandomAccessFile out = new RandomAccessFile(BOWLER_DAT, "rw");

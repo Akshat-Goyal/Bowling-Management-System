@@ -54,16 +54,9 @@ public class Bowler {
 	}
 	
 	public boolean equals ( Bowler b) {
-		boolean retval = true;
-		if ( !(nickName.equals(b.getNickName())) ) {
-				retval = false;
+		if ( !(nickName.equals(b.getNickName())) || !(fullName.equals(b.getFullName())) || !(email.equals(b.getEmail())) ) {
+				return false;
 		}
-		if ( !(fullName.equals(b.getFullName())) ) {
-				retval = false;
-		}	
-		if ( !(email.equals(b.getEmail())) ) {
-				retval = false;
-		}
-		return retval;
+		return true;
 	}
 }

@@ -23,7 +23,7 @@ import java.util.*;
 
 public class ControlDeskView implements ActionListener, ControlDeskObserver {
 
-	private JButton addParty, finished, assign;
+	private JButton addParty, finished, assign, scores;
 	private JFrame win;
 	private JList partyList;
 	
@@ -62,12 +62,19 @@ public class ControlDeskView implements ActionListener, ControlDeskObserver {
 		addPartyPanel.add(addParty);
 		controlsPanel.add(addPartyPanel);
 
+		scores = new JButton("Scores");
+		JPanel playerPanel = new JPanel();
+		playerPanel.setLayout(new FlowLayout());
+		scores.addActionListener(this);
+		playerPanel.add(scores);
+		controlsPanel.add(playerPanel);
+
 		assign = new JButton("Assign Lanes");
 		JPanel assignPanel = new JPanel();
 		assignPanel.setLayout(new FlowLayout());
 		assign.addActionListener(this);
 		assignPanel.add(assign);
-//		controlsPanel.add(assignPanel);
+		// controlsPanel.add(assignPanel);
 
 		finished = new JButton("Finished");
 		JPanel finishedPanel = new JPanel();
@@ -109,7 +116,7 @@ public class ControlDeskView implements ActionListener, ControlDeskObserver {
 		partyPane.setVerticalScrollBarPolicy(
 			JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		partyPanel.add(partyPane);
-		//		partyPanel.add(partyList);
+		// partyPanel.add(partyList);
 
 		// Clean up main panel
 		colPanel.add(controlsPanel, "East");
@@ -146,6 +153,9 @@ public class ControlDeskView implements ActionListener, ControlDeskObserver {
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource().equals(addParty)) {
 			AddPartyView addPartyWin = new AddPartyView(this, maxMembers);
+		}
+		if (e.getSource().equals(scores)) {
+			ScoreView scoreWin = new ScoreView(this);
 		}
 		if (e.getSource().equals(assign)) {
 			controlDesk.assignLane();
