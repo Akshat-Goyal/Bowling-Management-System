@@ -614,6 +614,9 @@ public class Lane extends Thread implements PinsetterObserver {
 	 * Pause the execution of this game
 	 */
 	public void pauseGame() {
+		if(gameIsHalted || !partyAssigned){
+			return;
+		}
 		gameIsHalted = true;
 		publish(lanePublish());
 	}
@@ -622,6 +625,9 @@ public class Lane extends Thread implements PinsetterObserver {
 	 * Resume the execution of this game
 	 */
 	public void unPauseGame() {
+		if(!gameIsHalted || !partyAssigned){
+			return;
+		}
 		gameIsHalted = false;
 		publish(lanePublish());
 	}

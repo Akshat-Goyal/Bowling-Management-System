@@ -23,7 +23,7 @@ import java.util.*;
 
 public class ControlDeskView implements ActionListener, ControlDeskObserver {
 
-	private JButton addParty, finished, assign, scores;
+	private JButton addParty, finished, assign, scores, pause;
 	private JFrame win;
 	private JList partyList;
 	
@@ -52,7 +52,7 @@ public class ControlDeskView implements ActionListener, ControlDeskObserver {
 
 		// Controls Panel
 		JPanel controlsPanel = new JPanel();
-		controlsPanel.setLayout(new GridLayout(3, 1));
+		controlsPanel.setLayout(new GridLayout(4, 1));
 		controlsPanel.setBorder(new TitledBorder("Controls"));
 
 		addParty = new JButton("Add Party");
@@ -82,6 +82,13 @@ public class ControlDeskView implements ActionListener, ControlDeskObserver {
 		finished.addActionListener(this);
 		finishedPanel.add(finished);
 		controlsPanel.add(finishedPanel);
+
+		pause = new JButton("Pause");
+		JPanel pausePanel = new JPanel();
+		pausePanel.setLayout(new FlowLayout());
+		pause.addActionListener(this);
+		pausePanel.add(pause);
+		controlsPanel.add(pausePanel);
 
 		// Lane Status Panel
 		JPanel laneStatusPanel = new JPanel();
@@ -163,6 +170,16 @@ public class ControlDeskView implements ActionListener, ControlDeskObserver {
 		if (e.getSource().equals(finished)) {
 			win.hide();
 			System.exit(0);
+		}
+		if (e.getSource().equals(pause)) {
+			if(pause.getText().equals("Pause")) {
+				pause.setText("Resume");
+				controlDesk.pauseGame();
+			}
+			else{
+				pause.setText("Pause");
+				controlDesk.unPauseGame();
+			}
 		}
 	}
 
