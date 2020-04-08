@@ -35,25 +35,25 @@ import java.util.*;
 import java.text.*;
 
 /**
- * Constructor for GUI used to Add Parties to the waiting party queue.
+ * Constructor for GUI used to Show LeaderBoard and Player Panel
  *  
  */
 
 public class ScoreView implements ActionListener, ListSelectionListener {
 
 	private JFrame win;
-	private JButton selectPlayer;
-	private JList partyList, allScores;
-	private Vector party, scoredb;
-	private Integer lock;
+	private JButton allScore, maxScore, minScore;
+	private JList playerList, boardList;
+	private Vector playerScore, leaderBoard;
 
-	private ControlDeskView controlDesk;
+	private ControlDeskView controlDeskView;
 
-	private String selectedNick, selectedMember;
+	private String selectedNick, selectedButton;
 
-	public ScoreView(ControlDeskView controlDesk) {
+	public ScoreView(ControlDeskView controlDeskView) {
 
-		this.controlDesk = controlDesk;
+		this.controlDeskView = controlDeskView;
+		updateLanesAboutScoreWin();
 
 		win = new JFrame("Scores");
 		win.getContentPane().setLayout(new BorderLayout());
@@ -62,60 +62,68 @@ public class ScoreView implements ActionListener, ListSelectionListener {
 		JPanel colPanel = new JPanel();
 		colPanel.setLayout(new GridLayout(1, 3));
 
-		// Party Panel
-		JPanel partyPanel = new JPanel();
-		partyPanel.setLayout(new FlowLayout());
-		partyPanel.setBorder(new TitledBorder("Player's Score"));
+		// Player Panel
+		JPanel playerPanel = new JPanel();
+		playerPanel.setLayout(new FlowLayout());
+		playerPanel.setBorder(new TitledBorder("Player Panel"));
 
-		party = new Vector();
+		playerScore = new Vector();
 		Vector empty = new Vector();
 		empty.add("(Empty)");
 
-		partyList = new JList(empty);
-		partyList.setFixedCellWidth(200);
-		partyList.setVisibleRowCount(5);
-		partyList.addListSelectionListener(this);
-		JScrollPane partyPane = new JScrollPane(partyList);
-		// partyPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		partyPanel.add(partyPane);
+		playerList = new JList(empty);
+		playerList.setFixedCellWidth(200);
+		playerList.setVisibleRowCount(8);
+		JScrollPane partyPane = new JScrollPane(playerList);
+		partyPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		playerPanel.add(partyPane);
 
-		// Bowler Database
-		JPanel scorePanel = new JPanel();
-		scorePanel.setLayout(new FlowLayout());
-		scorePanel.setBorder(new TitledBorder("Leader Board"));
+		// Leader Board Database
+		JPanel boardPanel = new JPanel();
+		boardPanel.setLayout(new FlowLayout());
+		boardPanel.setBorder(new TitledBorder("Leader Board"));
 
-		try {
-			scoredb = new Vector(ScoreHistoryFile.getScores());
-		} catch (Exception e) {
-			System.err.println("File Error");
-			scoredb = new Vector();
-		}
-		allScores = new JList(scoredb);
-		allScores.setVisibleRowCount(8);
-		allScores.setFixedCellWidth(120);
-		JScrollPane scorePane = new JScrollPane(allScores);
+		leaderBoard = getLeaderBoard();
+		boardList = new JList(leaderBoard);
+		boardList.setVisibleRowCount(8);
+		boardList.setFixedCellWidth(120);
+		JScrollPane scorePane = new JScrollPane(boardList);
 		scorePane.setVerticalScrollBarPolicy(
 			JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		allScores.addListSelectionListener(this);
-		scorePanel.add(scorePane);
+		boardList.addListSelectionListener(this);
+		boardPanel.add(scorePane);
 
 		// Button Panel
 		JPanel buttonPanel = new JPanel();
-		buttonPanel.setLayout(new GridLayout(4, 1));
+		buttonPanel.setLayout(new GridLayout(3, 1));
 
 		Insets buttonMargin = new Insets(4, 4, 4, 4);
 
-		selectPlayer = new JButton("Select");
-		JPanel selectPlayerPanel = new JPanel();
-		selectPlayerPanel.setLayout(new FlowLayout());
-		selectPlayer.addActionListener(this);
-		selectPlayerPanel.add(selectPlayer);
+		allScore = new JButton("All Scores");
+		JPanel allScorePanel = new JPanel();
+		allScorePanel.setLayout(new FlowLayout());
+		allScore.addActionListener(this);
+		allScorePanel.add(allScore);
 
-		buttonPanel.add(selectPlayerPanel);
+		maxScore = new JButton("Max Score");
+		JPanel maxScorePanel = new JPanel();
+		maxScorePanel.setLayout(new FlowLayout());
+		maxScore.addActionListener(this);
+		maxScorePanel.add(maxScore);
+
+		minScore = new JButton("Min Score");
+		JPanel minScorePanel = new JPanel();
+		minScorePanel.setLayout(new FlowLayout());
+		minScore.addActionListener(this);
+		minScorePanel.add(minScore);
+
+		buttonPanel.add(allScorePanel);
+		buttonPanel.add(maxScorePanel);
+		buttonPanel.add(minScorePanel);
 
 		// Clean up main panel
-		colPanel.add(partyPanel);
-		colPanel.add(scorePanel);
+		colPanel.add(playerPanel);
+		colPanel.add(boardPanel);
 		colPanel.add(buttonPanel);
 
 		win.getContentPane().add("Center", colPanel);
@@ -131,18 +139,68 @@ public class ScoreView implements ActionListener, ListSelectionListener {
 
 	}
 
+	public void updateLanesAboutScoreWin(){
+		HashSet Lanes = controlDeskView.getControlDesk().getLanes();
+		Lanes.forEach((v) -> {
+			Lane lane = (Lane) v;
+			lane.updateScoreWin(this);
+		});
+	}
+
+	public Vector getLeaderBoard() {
+		Vector scoreBoard;
+		try {
+			scoreBoard = new Vector(ScoreHistoryFile.getScores());
+		} catch (Exception err) {
+			System.err.println("File Error");
+			scoreBoard = new Vector();
+		}
+		return scoreBoard;
+	}
+
+	public Vector getPlayerScore(String nickName) {
+		Vector nickScore = new Vector();
+		try {
+			Vector scoredb = new Vector(ScoreHistoryFile.getScores(nickName));
+			Collections.sort(scoredb, new SortbyScore());
+			scoredb.forEach((v) -> {
+				Score score = (Score) v;
+				nickScore.add(new String( score.getNickName() + "  " + score.getDate() + "  " + score.getScore() ));
+			});
+		} catch (Exception err) {
+			System.err.println("File Error");
+		}
+		return nickScore;
+	}
+
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource().equals(selectPlayer)) {
+		if (e.getSource().equals(allScore)) {
 			if (selectedNick != null) {
-				try {
-					Vector playerScore = new Vector(ScoreHistoryFile.getScores(selectedNick.split(":  ")[0]));
-					party = new Vector();
-					playerScore.forEach((v) -> party.add(v));
-				} catch (Exception err) {
-					System.err.println("File Error");
-					party = new Vector();
+				selectedButton = "allScore";
+				playerScore = getPlayerScore(selectedNick.split(":  ")[0]);
+				playerList.setListData(playerScore);
+			}
+		}
+		if (e.getSource().equals(minScore)) {
+			if (selectedNick != null) {
+				selectedButton = "minScore";
+				Vector scoredb = getPlayerScore(selectedNick.split(":  ")[0]);
+				playerScore = new Vector();
+				if(!scoredb.isEmpty()){
+					playerScore.add(scoredb.lastElement());
 				}
-				partyList.setListData(party);
+				playerList.setListData(playerScore);
+			}
+		}
+		if (e.getSource().equals(maxScore)) {
+			if (selectedNick != null) {
+				selectedButton = "maxScore";
+				Vector scoredb = getPlayerScore(selectedNick.split(":  ")[0]);
+				playerScore = new Vector();
+				if(!scoredb.isEmpty()){
+					playerScore.add(scoredb.get(0));
+				}
+				playerList.setListData(playerScore);
 			}
 		}
 	}
@@ -153,56 +211,36 @@ public class ScoreView implements ActionListener, ListSelectionListener {
  */
 
 	public void valueChanged(ListSelectionEvent e) {
-		if (e.getSource().equals(allScores)) {
+		if (e.getSource().equals(boardList)) {
 			selectedNick =
 				((String) ((JList) e.getSource()).getSelectedValue());
 		}
-		if (e.getSource().equals(partyList)) {
-			selectedMember =
-				((String) ((JList) e.getSource()).getSelectedValue());
+	}
+
+
+/**
+ * Called by ??? to notify Score View to update Leader Board and Player Panel
+ */
+
+	public void updateScoreView() {
+		String nickName = selectedNick;
+		if (selectedNick != null) {
+			Vector scoredb = getPlayerScore(selectedNick.split(":  ")[0]);
+			playerScore = new Vector();
+			if(!scoredb.isEmpty() && selectedButton == "maxScore"){
+				playerScore.add(scoredb.get(0));
+			}
+			else if(!scoredb.isEmpty() && selectedButton == "minScore"){
+				playerScore.add(scoredb.lastElement());
+			}
+			else{
+				playerScore = scoredb;
+			}
+			playerList.setListData(playerScore);
 		}
-	}
-
-/**
- * Accessor for Party
- */
-
-	public Vector getNames() {
-		return party;
-	}
-
-/**
- * Called by NewPatronView to notify AddPartyView to update
- * 
- * @param newPatron the NewPatronView that called this method
- */
-
-//	public void updateNewPatron(NewPatronView newPatron) {
-//		try {
-//			Bowler checkBowler = BowlerFile.getBowlerInfo( newPatron.getNick() );
-//			if ( checkBowler == null ) {
-//				BowlerFile.putBowlerInfo(
-//					newPatron.getNick(),
-//					newPatron.getFull(),
-//					newPatron.getEmail());
-//				scoredb = new Vector(BowlerFile.getBowlers());
-//				allScores.setListData(scoredb);
-//				party.add(newPatron.getNick());
-//				partyList.setListData(party);
-//			} else {
-//				System.err.println( "A Bowler with that name already exists." );
-//			}
-//		} catch (Exception e2) {
-//			System.err.println("File I/O Error");
-//		}
-//	}
-
-/**
- * Accessor for Party
- */
-
-	public Vector getParty() {
-		return party;
+		leaderBoard = getLeaderBoard();
+		boardList.setListData(leaderBoard);
+		selectedNick = nickName;
 	}
 
 }

@@ -138,6 +138,7 @@ import java.util.Date;
 
 public class Lane extends Thread implements PinsetterObserver {	
 	private Party party;
+	private ScoreView scoreWin = null;
 	private Pinsetter setter;
 	private HashMap scores;
 	private Vector subscribers;
@@ -216,7 +217,7 @@ public class Lane extends Thread implements PinsetterObserver {
 						try{
 						Date date = new Date();
 						String dateString = "" + date.getHours() + ":" + date.getMinutes() + " " + date.getMonth() + "/" + date.getDay() + "/" + (date.getYear() + 1900);
-						ScoreHistoryFile.addScore(currentThrower.getNick(), dateString, new Integer(cumulScores[bowlIndex][9]).toString());
+						ScoreHistoryFile.addScore(currentThrower.getNick(), dateString, new Integer(cumulScores[bowlIndex][9]).toString(), scoreWin);
 						} catch (Exception e) {System.err.println("Exception in addScore. "+ e );} 
 					}
 
@@ -281,7 +282,14 @@ public class Lane extends Thread implements PinsetterObserver {
 			} catch (Exception e) {}
 		}
 	}
-	
+
+	/** update ScoreWin to current Score View recently opened
+	 * @param scoreView current scoreWin
+	 */
+	public void updateScoreWin(ScoreView scoreView){
+		scoreWin = scoreView;
+	}
+
 	/** recievePinsetterEvent()
 	 * 
 	 * recieves the thrown event from the pinsetter

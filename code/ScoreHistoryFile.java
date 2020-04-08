@@ -10,10 +10,10 @@
 import java.util.*;
 import java.io.*;
 
-class SortbyScore implements Comparator<String> {
-	public int compare(String a, String b){
-		int c = Integer.valueOf(a.split(":  ")[1]);
-		int d = Integer.valueOf(b.split(":  ")[1]);
+class SortbyScore implements Comparator<Score> {
+	public int compare(Score a, Score b){
+		int c = Integer.valueOf(a.getScore());
+		int d = Integer.valueOf(b.getScore());
 		return d-c;
 	}
 }
@@ -22,7 +22,7 @@ public class ScoreHistoryFile {
 
 	private static String SCOREHISTORY_DAT = "SCOREHISTORY.DAT";
 
-	public static void addScore(String nick, String date, String score)
+	public static void addScore(String nick, String date, String score, ScoreView scoreWin)
 		throws IOException, FileNotFoundException {
 
 		String data = nick + "\t" + date + "\t" + score + "\n";
@@ -31,6 +31,10 @@ public class ScoreHistoryFile {
 		out.skipBytes((int) out.length());
 		out.writeBytes(data);
 		out.close();
+
+		if(scoreWin != null) {
+			scoreWin.updateScoreView();
+		}
 	}
 
 	public static Vector getScores(String nick)
@@ -58,22 +62,22 @@ public class ScoreHistoryFile {
 		BufferedReader in =
 				new BufferedReader(new FileReader(SCOREHISTORY_DAT));
 		String data;
-		HashMap<String, Integer> scoreMap = new HashMap<String, Integer>();
+		HashMap<String, String> scoreMap = new HashMap<String, String>();
 		while ((data = in.readLine()) != null) {
 			// File format is nick\tfname\te-mail
 			String[] scoredata = data.split("\t");
 			//"Nick: scoredata[0] Date: scoredata[1] Score: scoredata[2]
-			if(scoreMap.containsKey(scoredata[0])){
-					if(scoreMap.get(scoredata[0]) < Integer.valueOf(scoredata[2])){
-						scoreMap.replace(scoredata[0], Integer.valueOf(scoredata[2]));
-					}
-			}
-			else{
-				scoreMap.put(scoredata[0], Integer.valueOf(scoredata[2]));
-			}
+			scores.add(new Score(scoredata[0], scoredata[1], scoredata[2]));
 		}
-		scoreMap.forEach((k, v) -> scores.add(new String(k + ":  " + String.valueOf(v))));
 		Collections.sort(scores, new SortbyScore());
+		scores.forEach((v) -> {
+			Score score = (Score) v;
+			if(!scoreMap.containsKey(score.getNickName())){
+				scoreMap.put(score.getNickName(), score.getScore());
+			}
+		});
+		scores.clear();
+		scoreMap.forEach((k, v) -> scores.add(new String(k + ":  " + v)));
 		return scores;
 	}
 

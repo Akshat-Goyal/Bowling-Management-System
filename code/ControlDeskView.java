@@ -167,6 +167,13 @@ public class ControlDeskView implements ActionListener, ControlDeskObserver {
 	}
 
 	/**
+	 *
+	 */
+	public ControlDesk getControlDesk(){
+		return controlDesk;
+	}
+
+	/**
 	 * Receive a new party from andPartyView.
 	 *
 	 * @param addPartyView	the AddPartyView that is providing a new party

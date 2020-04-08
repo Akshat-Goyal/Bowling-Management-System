@@ -31,7 +31,7 @@ public class Score {
 	}
 
 	public String toString() {
-		return nick + "  " + date + "  " + score;
+		return nick + "\t" + date + "\t" + score;
 	}
 
 }
