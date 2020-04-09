@@ -139,6 +139,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Calendar;
 
+
 public class Lane extends Thread implements PinsetterObserver {	
 	private Party party;
 	private ScoreView scoreWin = null;
