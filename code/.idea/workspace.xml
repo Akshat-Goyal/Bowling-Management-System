@@ -2,24 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="53f42edc-740b-4b41-94f9-66e64d787774" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/json-simple-1.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/json-simple-1.1/META-INF/MANIFEST.MF" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/json-simple-1.1/org/json/simple/ItemList.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/json-simple-1.1/org/json/simple/JSONArray.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/json-simple-1.1/org/json/simple/JSONAware.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/json-simple-1.1/org/json/simple/JSONObject.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/json-simple-1.1/org/json/simple/JSONStreamAware.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/json-simple-1.1/org/json/simple/JSONValue.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/json-simple-1.1/org/json/simple/parser/ContainerFactory.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/json-simple-1.1/org/json/simple/parser/ContentHandler.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/json-simple-1.1/org/json/simple/parser/JSONParser.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/json-simple-1.1/org/json/simple/parser/ParseException.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/json-simple-1.1/org/json/simple/parser/Yylex.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/json-simple-1.1/org/json/simple/parser/Yytoken.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/code.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/code.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Lane.class" beforeDir="false" afterPath="$PROJECT_DIR$/Lane.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lane.java" beforeDir="false" afterPath="$PROJECT_DIR$/Lane.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/LaneStatusView.class" beforeDir="false" afterPath="$PROJECT_DIR$/LaneStatusView.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
