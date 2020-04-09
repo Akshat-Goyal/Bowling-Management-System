@@ -467,7 +467,7 @@ public class Lane extends Thread implements PinsetterObserver {
 
 	/** publish
 	 *
-	 * Method that publishes event to subscribers by getting by fetching event
+	 * publish();Method that publishes event to subscribers by getting by fetching event
 	 *
 	 */
 
@@ -495,45 +495,88 @@ public class Lane extends Thread implements PinsetterObserver {
 	/**
 	 * loads data from Lane.json file
 	 */
-	public void loadData() {
-		JSONParser jsonParser = new JSONParser();
+//	public void loadData() {
+//		JSONParser jsonParser = new JSONParser();
+//
+//		try (FileReader reader = new FileReader("./Lane.json")) {
+//			Object obj = jsonParser.parse(reader);
+//			return (JSONArray) obj;
+//		}
+//		catch (ParseException | IOException e){ }
+//		return (new JSONArray());
+//	}
+//
+//	/**
+//	 * writes the lane data to Lane.json file
+//	 */
+//	public void dumpData(JSONArray laneData) {
+//		try {
+//			FileWriter writer = new FileWriter("./Lane.json");
+//			writer.write(laneData.toJSONString());
+//			writer.close();
+//		}
+//		catch (IOException e) { }
+//	}
 
-		try (FileReader reader = new FileReader("./Lane.json")) {
-			Object obj = jsonParser.parse(reader);
-			return (JSONArray) obj;
-		}
-		catch (ParseException | IOException e){ }
-		return (new JSONArray());
-	}
-
-	/**
-	 * writes the lane data to Lane.json file
-	 */
-	public void dumpData(JSONArray laneData) {
-		try {
-			FileWriter writer = new FileWriter("./Lane.json");
-			writer.write(laneData.toJSONString());
-			writer.close();
-		}
-		catch (IOException e) { }
-	}
-
-	public JSONObject collectData() {
-		JSONObject LaneData = new JSONObject();
-		JSONArray partyData = new JSONArray();
-		JSONArray scoreData = new JSONArray();
-		party.getMembers().forEach((v) -> {
-			partyData.add(((Bowler) v).getNickName());
-		});
-		LaneData.put("party", partyData);
-	}
+//	public JSONObject collectData() {
+//		JSONObject LaneData = new JSONObject();
+//		JSONArray partyData = new JSONArray();
+//		JSONArray scoreData = new JSONArray();
+//		party.getMembers().forEach((v) -> {
+//			Bowler bowler = (Bowler) v;
+//			int[] ans = (int[]) scores.get(bowler);
+//			JSONArray score = new JSONArray();
+//			for(int j = 0; j < ans.length; j++) {
+//				score.add(ans[j]);
+//			}
+//			scoreData.add(score);
+//			partyData.add(bowler.getNickName());
+//		});
+//		LaneData.put("party", partyData);
+//		LaneData.put("scores", scoreData);
+//
+//		LaneData.put("currentThrower", currentThrower.getNickName());
+//
+//		JSONArray curScoreData = new JSONArray();
+//		curScores.forEach((v) -> curScoreData.add(((int) v)));
+//		LaneData.put("curScores", curScoreData);
+//
+//		JSONArray cumulScoreData = new JSONArray();
+//		for(int[] cumulScore: currentCumulScores){
+//			JSONArray cumScore = new JSONArray();
+//			cumulScore.forEach((v) -> cumScore.add(((int) v)));
+//			cumulScoreData.add(cumScore);
+//		}
+//		LaneData.put("cumulScores", cumulScoreData);
+//
+//		JSONArray finalScoreData = new JSONArray();
+//
+//		for(int[] finalScore: finalScores){
+//			JSONArray fScore = new JSONArray();
+//			finalScore.forEach((v) -> fscore.add(((int) v)));
+//			finalScoreData.add(fScore);
+//		}
+//		LaneData.put("finalScores", finalScoreData);
+//
+//		LaneData.put("gameIsHalted", gameIsHalted);
+//		LaneData.put("canThrowAgain", canThrowAgain);
+//		LaneData.put("frameNumber", frameNumber);
+//		LaneData.put("gameNumber", gameNumber);
+//
+//		return LaneData;
+//	}
 
 	/**
 	 * Pause the execution of this game
 	 */
 	public void pauseGame() {
 		gameIsHalted = true;
+
 		publish();
+//		JSONObject LaneData = collectData();
+//		JSONArray laneArr = loadData();
+//		laneArr.add(LaneData);
+//		dumpData(laneArr);
 	}
 	
 	/**
