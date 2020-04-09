@@ -23,7 +23,7 @@ import java.util.*;
 
 public class ControlDeskView implements ActionListener, ControlDeskObserver {
 
-	private JButton addParty, finished, assign, scores;
+	private JButton addParty, finished, assign, scores, loadGame;
 	private JFrame win;
 	private JList partyList;
 	
@@ -52,7 +52,7 @@ public class ControlDeskView implements ActionListener, ControlDeskObserver {
 
 		// Controls Panel
 		JPanel controlsPanel = new JPanel();
-		controlsPanel.setLayout(new GridLayout(3, 1));
+		controlsPanel.setLayout(new GridLayout(4, 1));
 		controlsPanel.setBorder(new TitledBorder("Controls"));
 
 		addParty = new JButton("Add Party");
@@ -82,6 +82,13 @@ public class ControlDeskView implements ActionListener, ControlDeskObserver {
 		finished.addActionListener(this);
 		finishedPanel.add(finished);
 		controlsPanel.add(finishedPanel);
+
+		loadGame = new JButton("Load Game");
+		JPanel loadGamePanel = new JPanel();
+		loadGamePanel.setLayout(new FlowLayout());
+		loadGame.addActionListener(this);
+		loadGamePanel.add(loadGame);
+		controlsPanel.add(loadGamePanel);
 
 		// Lane Status Panel
 		JPanel laneStatusPanel = new JPanel();
@@ -156,6 +163,9 @@ public class ControlDeskView implements ActionListener, ControlDeskObserver {
 		}
 		if (e.getSource().equals(scores)) {
 			ScoreView scoreWin = new ScoreView(this);
+		}
+		if (e.getSource().equals(loadGame)) {
+			LoadGameView loadGameWin = new LoadGameView(this);
 		}
 		if (e.getSource().equals(assign)) {
 			controlDesk.assignLane();

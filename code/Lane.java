@@ -131,13 +131,22 @@
  * 
  */
 
-import java.util.Vector;
-import java.util.Iterator;
-import java.util.HashMap;
+//import org.json.simple.JSONArray;
+//import org.json.simple.JSONObject;
+//import org.json.simple.parser.JSONParser;
+//import org.json.simple.parser.ParseException;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Calendar;
 
 
 public class Lane extends Thread implements PinsetterObserver {	
@@ -160,7 +169,7 @@ public class Lane extends Thread implements PinsetterObserver {
 	private int[] curScores;
 	private CumulLaneScores currentCumulScores;
 	private boolean canThrowAgain;
-	
+	private String pauseTime;
 	private int[][] finalScores;
 	private int gameNumber;
 	
@@ -493,97 +502,149 @@ public class Lane extends Thread implements PinsetterObserver {
 		return setter;	
 	}
 
-	/**
-	 * loads data from Lane.json file
-	 */
-//	public void loadData() {
-//		JSONParser jsonParser = new JSONParser();
-//
-//		try (FileReader reader = new FileReader("./Lane.json")) {
-//			Object obj = jsonParser.parse(reader);
-//			return (JSONArray) obj;
-//		}
-//		catch (ParseException | IOException e){ }
-//		return (new JSONArray());
-//	}
-//
-//	/**
-//	 * writes the lane data to Lane.json file
-//	 */
-//	public void dumpData(JSONArray laneData) {
-//		try {
-//			FileWriter writer = new FileWriter("./Lane.json");
-//			writer.write(laneData.toJSONString());
-//			writer.close();
-//		}
-//		catch (IOException e) { }
-//	}
+	public static int[] parse1DArray(JSONArray array) {
+		int[] arr = new int[array.size()];
+		for(int i = 0; i < array.size(); i++) {
+			arr[i] = Math.toIntExact((long)(array.get(i)));
+		}
+		return arr;
+	}
 
-//	public JSONObject collectData() {
-//		JSONObject LaneData = new JSONObject();
-//		JSONArray partyData = new JSONArray();
-//		JSONArray scoreData = new JSONArray();
-//		party.getMembers().forEach((v) -> {
-//			Bowler bowler = (Bowler) v;
-//			int[] ans = (int[]) scores.get(bowler);
-//			JSONArray score = new JSONArray();
-//			for(int j = 0; j < ans.length; j++) {
-//				score.add(ans[j]);
-//			}
-//			scoreData.add(score);
-//			partyData.add(bowler.getNickName());
-//		});
-//		LaneData.put("party", partyData);
-//		LaneData.put("scores", scoreData);
-//
-//		LaneData.put("currentThrower", currentThrower.getNickName());
-//
-//		JSONArray curScoreData = new JSONArray();
-//		curScores.forEach((v) -> curScoreData.add(((int) v)));
-//		LaneData.put("curScores", curScoreData);
-//
-//		JSONArray cumulScoreData = new JSONArray();
-//		for(int[] cumulScore: currentCumulScores){
-//			JSONArray cumScore = new JSONArray();
-//			cumulScore.forEach((v) -> cumScore.add(((int) v)));
-//			cumulScoreData.add(cumScore);
-//		}
-//		LaneData.put("cumulScores", cumulScoreData);
-//
-//		JSONArray finalScoreData = new JSONArray();
-//
-//		for(int[] finalScore: finalScores){
-//			JSONArray fScore = new JSONArray();
-//			finalScore.forEach((v) -> fscore.add(((int) v)));
-//			finalScoreData.add(fScore);
-//		}
-//		LaneData.put("finalScores", finalScoreData);
-//
-//		LaneData.put("gameIsHalted", gameIsHalted);
-//		LaneData.put("canThrowAgain", canThrowAgain);
-//		LaneData.put("frameNumber", frameNumber);
-//		LaneData.put("gameNumber", gameNumber);
-//
-//		return LaneData;
-//	}
+	public static int[][] parse2DArray(JSONArray array) {
+		int[][] arr = new int[array.size()][];
+		for(int i = 0; i < array.size(); i++) {
+			JSONArray newArray = (JSONArray)array.get(i);
+			arr[i] = parse1DArray(newArray);
+		}
+		return arr;
+	}
+
+	/**
+	 * updates all the states of lane to resume the previous game
+	 */
+	public void updateStates(JSONObject obj) {
+		try{
+			System.out.println("ok... assigning this party");
+
+			ArrayList<String> partyList = (ArrayList<String>) obj.get("party");
+			ArrayList<int[]> scoreList = (ArrayList<int[]>) obj.get("scores");
+
+			Vector partyVector = new Vector();
+			scores = new HashMap();
+			for(int i = 0; i < partyList.size(); i++) {
+				String s = partyList.get(i);
+				partyVector.add(BowlerFile.getBowlerInfo(s));
+				scores.put(BowlerFile.getBowlerInfo(s), scoreList.get(i));
+			}
+			party = new Party(partyVector);
+			party.setOld(true);
+
+			currentThrower = (Bowler) BowlerFile.getBowlerInfo((String) obj.get("currentThrower"));
+//			bowlIndex = Math.toIntExact((long)obj.get("bowlIndex"));
+			curScores = parse1DArray((JSONArray) obj.get("curScores"));
+
+			currentCumulScores = new CumulLaneScores(bowlIndex);
+			currentCumulScores.setCumulScores(parse2DArray((JSONArray) obj.get("cumulScores")));
+
+			finalScores = parse2DArray((JSONArray) obj.get("finalScores"));
+			pauseTime = (String) obj.get("pauseTime");
+			gameIsHalted = (Boolean) obj.get("gameIsHalted");
+			canThrowAgain = (Boolean) obj.get("canThrowAgain");
+			frameNumber = Math.toIntExact((long)obj.get("frameNumber"));
+			gameNumber = Math.toIntExact((long)obj.get("gameNumber"));
+
+			unPauseGame();
+		} catch (Exception e) {
+			System.err.println("File Error");
+		}
+
+	}
+
+	/**
+	 * collects all data of lane and add it to jsonObject
+	 */
+	public JSONObject collectData() {
+		JSONObject LaneData = new JSONObject();
+
+		JSONArray partyData = new JSONArray();
+		JSONArray scoreData = new JSONArray();
+		party.getMembers().forEach((v) -> {
+			Bowler bowler = (Bowler) v;
+			int[] ans = (int[]) scores.get(bowler);
+			JSONArray score = new JSONArray();
+			for(int j = 0; j < ans.length; j++) {
+				score.add(ans[j]);
+			}
+			scoreData.add(score);
+			partyData.add(bowler.getNickName());
+		});
+		LaneData.put("party", partyData);
+		LaneData.put("scores", scoreData);
+
+		LaneData.put("currentThrower", currentThrower.getNickName());
+
+		JSONArray curScoreData = new JSONArray();
+		for(int score: curScores){
+			curScoreData.add(score);
+		}
+		LaneData.put("curScores", curScoreData);
+
+		JSONArray cumulScoreData = new JSONArray();
+		for(int[] cumulScore: currentCumulScores.getCumulScores()){
+			JSONArray cumScore = new JSONArray();
+			for(int score: cumulScore){
+				cumScore.add(score);
+			}
+			cumulScoreData.add(cumScore);
+		}
+		LaneData.put("cumulScores", cumulScoreData);
+
+		JSONArray finalScoreData = new JSONArray();
+
+		for(int[] finalScore: finalScores){
+			JSONArray fScore = new JSONArray();
+			for(int score: finalScore){
+				fScore.add(score);
+			}
+			finalScoreData.add(fScore);
+		}
+		LaneData.put("finalScores", finalScoreData);
+
+		Date date = Calendar.getInstance().getTime();
+		DateFormat dateFormat = new SimpleDateFormat("hh:mm dd/mm/yyyy");
+		String pauseTime = dateFormat.format(date);
+		this.pauseTime = pauseTime;
+		LaneData.put("pauseTime", pauseTime);
+		LaneData.put("bowlIndex", bowlIndex);
+		LaneData.put("gameIsHalted", gameIsHalted);
+		LaneData.put("canThrowAgain", canThrowAgain);
+		LaneData.put("frameNumber", frameNumber);
+		LaneData.put("gameNumber", gameNumber);
+
+		return LaneData;
+	}
 
 	/**
 	 * Pause the execution of this game
 	 */
 	public void pauseGame() {
 		gameIsHalted = true;
-
 		publish();
-//		JSONObject LaneData = collectData();
-//		JSONArray laneArr = loadData();
-//		laneArr.add(LaneData);
-//		dumpData(laneArr);
+		JSONObject LaneData = collectData();
+		JSONArray laneArr = LaneJsonFile.loadData();
+		laneArr.add(LaneData);
+		LaneJsonFile.dumpData(laneArr);
 	}
 	
 	/**
 	 * Resume the execution of this game
 	 */
 	public void unPauseGame() {
+		try{
+			LaneJsonFile.delParty(((Bowler) party.getMembers().get(0)).getNickName(), pauseTime);
+		} catch (Exception e) {
+			System.err.println("File Error");
+		}
 		gameIsHalted = false;
 		publish();
 	}

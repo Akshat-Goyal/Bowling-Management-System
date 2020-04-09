@@ -28,7 +28,7 @@ public class Party {
 
 	/** Vector of bowlers in this party */	
     private Vector myBowlers;
-	
+	private  boolean old;
 	/**
 	 * Constructor for a Party
 	 * 
@@ -37,7 +37,18 @@ public class Party {
 		
     public Party( Vector bowlers ) {
 		myBowlers = new Vector(bowlers);
+		old = false;
     }
+
+	/**
+	 * sets old
+	 */
+	public void setOld(boolean x) {old = x;}
+
+	/**
+	 * gets old which is true if resumed again after closing
+	 */
+	public boolean getOld() {return old;}
 
 	/**
 	 * Accessor for members in this party

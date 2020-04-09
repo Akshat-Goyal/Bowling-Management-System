@@ -132,11 +132,12 @@ public class LaneView implements LaneObserver, ActionListener {
 				}
 			}
 
-			if (le.getFrameNum() == 1 && le.getBall() == 0 && le.getIndex() == 0)
+			if ((le.getFrameNum() == 1 && le.getBall() == 0 && le.getIndex() == 0) || le.getParty().getOld()){
+				le.getParty().setOld(false);
 				makeFrame(le);
+			}
 
 			setScores(le);
-
 		}
 	}
 

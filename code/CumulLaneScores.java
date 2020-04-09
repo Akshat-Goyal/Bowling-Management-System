@@ -40,6 +40,10 @@ public class CumulLaneScores  {
 		return cumulScores;
 	}
 
+	public void setCumulScores(int[][] cumScore) {
+		cumulScores = cumScore;
+	}
+
 	public int getScore( Bowler Cur, int frame, int ball, int[] curScore) {
 		int totalScore = 0;
 		for (int i = 0; i != 10; i++){
