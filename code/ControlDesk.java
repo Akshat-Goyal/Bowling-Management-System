@@ -234,27 +234,4 @@ class ControlDesk extends Thread {
 	public HashSet getLanes() {
 		return lanes;
 	}
-
-	/**
-	 * Pause the execution of this game
-	 */
-	public void pauseGame() {
-		Iterator it = lanes.iterator();
-		while (it.hasNext()) {
-			Lane curLane = (Lane) it.next();
-			curLane.pauseGame();
-		}
-	}
-
-	/**
-	 * Resume the execution of this game
-	 */
-	public void unPauseGame() {
-		Iterator it = lanes.iterator();
-		while (it.hasNext()) {
-			Lane curLane = (Lane) it.next();
-			curLane.unPauseGame();
-		}
-	}
-
 }

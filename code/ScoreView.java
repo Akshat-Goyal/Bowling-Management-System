@@ -1,29 +1,3 @@
-/* AddPartyView.java
- *
- *  Version:
- * 		 $Id$
- * 
- *  Revisions:
- * 		$Log: AddPartyView.java,v $
- * 		Revision 1.7  2003/02/20 02:05:53  ???
- * 		Fixed addPatron so that duplicates won't be created.
- * 		
- * 		Revision 1.6  2003/02/09 20:52:46  ???
- * 		Added comments.
- * 		
- * 		Revision 1.5  2003/02/02 17:42:09  ???
- * 		Made updates to migrate to observer model.
- * 		
- * 		Revision 1.4  2003/02/02 16:29:52  ???
- * 		Added ControlDeskEvent and ControlDeskObserver. Updated Queue to allow access to Vector so that contents could be viewed without destroying. Implemented observer model for most of ControlDesk.
- * 		
- * 
- */
-
-/**
- * Class for GUI components need to add a party
- *
- */
 
 import java.awt.*;
 import java.awt.event.*;
@@ -139,6 +113,9 @@ public class ScoreView implements ActionListener, ListSelectionListener {
 
 	}
 
+	/**
+	 * updates scoreview object of all lanes to this
+	 */
 	public void updateLanesAboutScoreWin(){
 		HashSet Lanes = controlDeskView.getControlDesk().getLanes();
 		Lanes.forEach((v) -> {
@@ -147,6 +124,9 @@ public class ScoreView implements ActionListener, ListSelectionListener {
 		});
 	}
 
+	/**
+	 * returns the players list with max their max score
+	 */
 	public Vector getLeaderBoard() {
 		Vector scoreBoard;
 		try {
@@ -158,6 +138,9 @@ public class ScoreView implements ActionListener, ListSelectionListener {
 		return scoreBoard;
 	}
 
+	/**
+	 * returns the list of all scores of a player in descending order of score
+	 */
 	public Vector getPlayerScore(String nickName) {
 		Vector nickScore = new Vector();
 		try {
@@ -219,7 +202,7 @@ public class ScoreView implements ActionListener, ListSelectionListener {
 
 
 /**
- * Called by ??? to notify Score View to update Leader Board and Player Panel
+ * Called by ScoreHistoryFile to notify Score View to update Leader Board and Player Panel
  */
 
 	public void updateScoreView() {

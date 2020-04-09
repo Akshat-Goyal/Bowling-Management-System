@@ -124,80 +124,70 @@ public class LaneView implements LaneObserver, ActionListener {
 
 	public void receiveLaneEvent(LaneEvent le) {
 		if (lane.isPartyAssigned()) {
-			int numBowlers = le.getParty().getMembers().size();
 			while (!initDone) {
-				//System.out.println("chillin' here.");
 				try {
 					Thread.sleep(1);
 				} catch (Exception e) {
+					break;
 				}
 			}
 
-			if (le.getFrameNum() == 1
-				&& le.getBall() == 0
-				&& le.getIndex() == 0) {
-				System.out.println("Making the frame.");
-				cpanel.removeAll();
-				cpanel.add(makeFrame(le.getParty()), "Center");
+			if (le.getFrameNum() == 1 && le.getBall() == 0 && le.getIndex() == 0)
+				makeFrame(le);
 
-				// Button Panel
-				JPanel buttonPanel = new JPanel();
-				buttonPanel.setLayout(new FlowLayout());
-
-				Insets buttonMargin = new Insets(4, 4, 4, 4);
-
-				maintenance = new JButton("Maintenance Call");
-				JPanel maintenancePanel = new JPanel();
-				maintenancePanel.setLayout(new FlowLayout());
-				maintenance.addActionListener(this);
-				maintenancePanel.add(maintenance);
-
-				buttonPanel.add(maintenancePanel);
-
-				cpanel.add(buttonPanel, "South");
-
-				frame.pack();
-
-			}
-
-			int[][] lescores = le.getCumulScore();
-			for (int k = 0; k < numBowlers; k++) {
-				for (int i = 0; i <= le.getFrameNum() - 1; i++) {
-					if (lescores[k][i] != 0)
-						scoreLabel[k][i].setText(
-							(new Integer(lescores[k][i])).toString());
-				}
-				for (int i = 0; i < 21; i++) {
-					if (((int[]) ((HashMap) le.getScore())
-						.get(bowlers.get(k)))[i]
-						!= -1)
-						if (((int[]) ((HashMap) le.getScore())
-							.get(bowlers.get(k)))[i]
-							== 10
-							&& (i % 2 == 0 || i == 19))
-							ballLabel[k][i].setText("X");
-						else if (
-							i > 0
-								&& ((int[]) ((HashMap) le.getScore())
-									.get(bowlers.get(k)))[i]
-									+ ((int[]) ((HashMap) le.getScore())
-										.get(bowlers.get(k)))[i
-									- 1]
-									== 10
-								&& i % 2 == 1)
-							ballLabel[k][i].setText("/");
-						else if ( ((int[])((HashMap) le.getScore()).get(bowlers.get(k)))[i] == -2 ){
-							
-							ballLabel[k][i].setText("F");
-						} else
-							ballLabel[k][i].setText(
-								(new Integer(((int[]) ((HashMap) le.getScore())
-									.get(bowlers.get(k)))[i]))
-									.toString());
-				}
-			}
+			setScores(le);
 
 		}
+	}
+
+	private void setScores(LaneEvent le) {
+		int[][] lescores = le.getCumulScore();
+		int numBowlers = le.getParty().getMembers().size();
+		for (int k = 0; k < numBowlers; k++) {
+			for (int i = 0; i <= le.getFrameNum() - 1; i++) {
+				if (lescores[k][i] != 0)
+					scoreLabel[k][i].setText(
+						(Integer.valueOf(lescores[k][i])).toString());
+			}
+
+			for(int i=0; i<21; i++) {
+				int value = ((int[]) le.getScore().get(bowlers.get(k)))[i];
+				if(value != -1) {
+					if(value == 10 && (i%2 == 0 || i == 19))
+						ballLabel[k][i].setText("X");
+					else if (i > 0  && i%2 == 1 && value + ((int[]) le.getScore().get(bowlers.get(k)))[i-1] == 10)
+						ballLabel[k][i].setText("/");
+					else if (value == -2)
+						ballLabel[k][i].setText("F");
+					else
+						ballLabel[k][i].setText(Integer.valueOf(value).toString());
+				}
+			}
+		}
+	}
+
+	private void makeFrame(LaneEvent le) {
+		System.out.println("Making the frame.");
+		cpanel.removeAll();
+		cpanel.add(makeFrame(le.getParty()), "Center");
+
+		// Button Panel
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setLayout(new FlowLayout());
+
+		Insets buttonMargin = new Insets(4, 4, 4, 4);
+
+		maintenance = new JButton("Maintenance Call");
+		JPanel maintenancePanel = new JPanel();
+		maintenancePanel.setLayout(new FlowLayout());
+		maintenance.addActionListener(this);
+		maintenancePanel.add(maintenance);
+
+		buttonPanel.add(maintenancePanel);
+
+		cpanel.add(buttonPanel, "South");
+
+		frame.pack();
 	}
 
 	public void actionPerformed(ActionEvent e) {

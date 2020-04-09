@@ -17,7 +17,7 @@ public class LaneStatusView implements ActionListener, LaneObserver, PinsetterOb
 	private JPanel jp;
 
 	private JLabel curBowler, foul, pinsDown;
-	private JButton viewLane;
+	private JButton viewLane, pauseLane;
 	private JButton viewPinSetter, maintenance;
 
 	private PinSetterView psv;
@@ -78,13 +78,20 @@ public class LaneStatusView implements ActionListener, LaneObserver, PinsetterOb
 		maintenance.addActionListener(this);
 		maintenancePanel.add(maintenance);
 
+		pauseLane = new JButton("Pause");
+		JPanel pauseLanePanel = new JPanel();
+		pauseLanePanel.setLayout(new FlowLayout());
+		pauseLane.addActionListener(this);
+		pauseLanePanel.add(pauseLane);
+
 		viewLane.setEnabled( false );
 		viewPinSetter.setEnabled( false );
-
+		pauseLane.setEnabled( false );
 
 		buttonPanel.add(viewLanePanel);
 		buttonPanel.add(viewPinSetterPanel);
 		buttonPanel.add(maintenancePanel);
+		buttonPanel.add(pauseLanePanel);
 
 		jp.add( cLabel );
 		jp.add( curBowler );
@@ -127,7 +134,20 @@ public class LaneStatusView implements ActionListener, LaneObserver, PinsetterOb
 		if (e.getSource().equals(maintenance)) {
 			if ( lane.isPartyAssigned() ) {
 				lane.unPauseGame();
+				pauseLane.setText("Pause");
 				maintenance.setBackground( Color.GREEN );
+			}
+		}
+		if (e.getSource().equals(pauseLane)) {
+			if ( lane.isPartyAssigned() ) {
+				if(pauseLane.getText().equals("Pause")){
+					pauseLane.setText("Resume");
+					lane.pauseGame();
+				}
+				else{
+					pauseLane.setText("Pause");
+					lane.unPauseGame();
+				}
 			}
 		}
 	}
@@ -136,22 +156,26 @@ public class LaneStatusView implements ActionListener, LaneObserver, PinsetterOb
 		curBowler.setText( ( (Bowler)le.getBowler()).getNickName() );
 		if ( le.isMechanicalProblem() ) {
 			maintenance.setBackground( Color.RED );
-		} else {
+			pauseLane.setText("Resume");
+		}
+		else{
 			maintenance.setBackground( Color.GREEN );
+			pauseLane.setText("Pause");
 		}
 		if ( lane.isPartyAssigned() == false ) {
 			viewLane.setEnabled( false );
 			viewPinSetter.setEnabled( false );
+			pauseLane.setEnabled( false );
 		} else {
 			viewLane.setEnabled( true );
 			viewPinSetter.setEnabled( true );
+			pauseLane.setEnabled( true );
 		}
 	}
 
 	public void receivePinsetterEvent(PinsetterEvent pe) {
 		pinsDown.setText( ( new Integer(pe.totalPinsDown()) ).toString() );
 //		foul.setText( ( new Boolean(pe.isFoulCommited()) ).toString() );
-		
 	}
 
 }
