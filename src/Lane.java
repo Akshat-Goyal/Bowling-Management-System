@@ -164,6 +164,7 @@ public class Lane extends Thread implements PinsetterObserver {
 	private int ball;
 	private int bowlIndex;
 	private int frameNumber;
+	private boolean isReady;
 	private boolean tenthFrameStrike;
 
 	private int[] curScores;
@@ -189,6 +190,7 @@ public class Lane extends Thread implements PinsetterObserver {
 
 		gameIsHalted = false;
 		partyAssigned = false;
+		isReady = true;
 
 		gameNumber = 0;
 
@@ -348,7 +350,7 @@ public class Lane extends Thread implements PinsetterObserver {
 			}  //  this is not a real throw, probably a reset
 
 	}
-	
+
 	/** resetBowlerIterator()
 	 * 
 	 * sets the current bower iterator back to the first bowler
@@ -425,7 +427,8 @@ public class Lane extends Thread implements PinsetterObserver {
 			}
 		}
 
-//		curScore = (int[]) scores.get(Cur);
+		// same thing as above 'for loop' but this line is giving file error
+		// curScore = (int[]) scores.get(Cur);
 
 		curScore[ index - 1] = score;
 		scores.put(Cur, curScore);
@@ -511,10 +514,16 @@ public class Lane extends Thread implements PinsetterObserver {
 	}
 
 	/**
+	 * returns false to assignLane in controlDesk if old party is assigned this lane
+	 */
+	public boolean getIsReady() { return isReady; }
+
+	/**
 	 * updates all the states of lane to resume the previous game
 	 */
 	public void updateStates(JSONObject obj) {
 		try{
+			isReady = false;
 			System.out.println("ok... assigning this party");
 			ArrayList<String> partyList = (ArrayList<String>) obj.get("party");
 			JSONArray scoreArray = (JSONArray) obj.get("scores");
@@ -546,6 +555,7 @@ public class Lane extends Thread implements PinsetterObserver {
 			frameNumber = Math.toIntExact((long)obj.get("frameNumber"));
 			gameNumber = Math.toIntExact((long)obj.get("gameNumber"));
 			partyAssigned = true;
+			isReady = true;
 			unPauseGame();
 		} catch (Exception e) {
 			System.err.println("File Error");
@@ -603,11 +613,11 @@ public class Lane extends Thread implements PinsetterObserver {
 	 * Resume the execution of this game
 	 */
 	public void unPauseGame() {
-//		try{
-//			LaneJsonFile.delParty(((Bowler) party.getMembers().get(0)).getNickName(), pauseTime);
-//		} catch (Exception e) {
-//			System.err.println("File Error");
-//		}
+		try{
+			LaneJsonFile.delParty(((Bowler) party.getMembers().get(0)).getNickName(), pauseTime);
+		} catch (Exception e) {
+			System.err.println("File Error");
+		}
 		gameIsHalted = false;
 		publish();
 	}
