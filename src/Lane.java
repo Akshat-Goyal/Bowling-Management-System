@@ -184,7 +184,7 @@ public class Lane extends Thread implements PinsetterObserver {
 	 */
 	public Lane() { 
 		setter = new Pinsetter();
-		scores = new HashMap();
+		scores = new HashMap<Bowler, int[]>();
 		subscribers = new Vector();
 
 		gameIsHalted = false;
@@ -414,11 +414,19 @@ public class Lane extends Thread implements PinsetterObserver {
 	 * @param score	The bowler's score 
 	 */
 	private void markScore( Bowler Cur, int frame, int ball, int score ){
-		int[] curScore;
+		int[] curScore = new int[25];
 		int index =  ( (frame - 1) * 2 + ball);
 
-		curScore = (int[]) scores.get(Cur);
-	
+		for(Object b: scores.keySet()) {
+			Bowler bowler = (Bowler) b;
+			if(bowler.equals(Cur)){
+				curScore = (int[]) scores.get(b);
+				break;
+			}
+		}
+
+//		curScore = (int[]) scores.get(Cur);
+
 		curScore[ index - 1] = score;
 		scores.put(Cur, curScore);
 		currentCumulScores.getScore(Cur, frame, ball, (int[]) scores.get(Cur));
@@ -502,57 +510,42 @@ public class Lane extends Thread implements PinsetterObserver {
 		return setter;	
 	}
 
-	public static int[] parse1DArray(JSONArray array) {
-		int[] arr = new int[array.size()];
-		for(int i = 0; i < array.size(); i++) {
-			arr[i] = Math.toIntExact((long)(array.get(i)));
-		}
-		return arr;
-	}
-
-	public static int[][] parse2DArray(JSONArray array) {
-		int[][] arr = new int[array.size()][];
-		for(int i = 0; i < array.size(); i++) {
-			JSONArray newArray = (JSONArray)array.get(i);
-			arr[i] = parse1DArray(newArray);
-		}
-		return arr;
-	}
-
 	/**
 	 * updates all the states of lane to resume the previous game
 	 */
 	public void updateStates(JSONObject obj) {
 		try{
 			System.out.println("ok... assigning this party");
-
 			ArrayList<String> partyList = (ArrayList<String>) obj.get("party");
-			ArrayList<int[]> scoreList = (ArrayList<int[]>) obj.get("scores");
-
+			JSONArray scoreArray = (JSONArray) obj.get("scores");
 			Vector partyVector = new Vector();
 			scores = new HashMap();
 			for(int i = 0; i < partyList.size(); i++) {
 				String s = partyList.get(i);
 				partyVector.add(BowlerFile.getBowlerInfo(s));
-				scores.put(BowlerFile.getBowlerInfo(s), scoreList.get(i));
+				scores.put(BowlerFile.getBowlerInfo(s), LaneJsonFile.parse1DArray((JSONArray) scoreArray.get(i)));
 			}
 			party = new Party(partyVector);
 			party.setOld(true);
-
-			currentThrower = (Bowler) BowlerFile.getBowlerInfo((String) obj.get("currentThrower"));
-//			bowlIndex = Math.toIntExact((long)obj.get("bowlIndex"));
-			curScores = parse1DArray((JSONArray) obj.get("curScores"));
-
+			currentThrower = BowlerFile.getBowlerInfo((String) obj.get("currentThrower"));
+			resetBowlerIterator();
+			while(bowlerIterator.hasNext()) {
+				Bowler bowler = (Bowler) bowlerIterator.next();
+				if(bowler.equals(currentThrower)) break;
+			}
+			bowlIndex = Math.toIntExact((long)obj.get("bowlIndex"));
 			currentCumulScores = new CumulLaneScores(bowlIndex);
-			currentCumulScores.setCumulScores(parse2DArray((JSONArray) obj.get("cumulScores")));
-
-			finalScores = parse2DArray((JSONArray) obj.get("finalScores"));
+			currentCumulScores.setCumulScores(LaneJsonFile.parse2DArray((JSONArray) obj.get("cumulScores")));
+			curScores = LaneJsonFile.parse1DArray((JSONArray) obj.get("curScores"));
+			finalScores = LaneJsonFile.parse2DArray((JSONArray) obj.get("finalScores"));
+			ball = Math.toIntExact((long)obj.get("ball"));
 			pauseTime = (String) obj.get("pauseTime");
+			tenthFrameStrike = (Boolean) obj.get("tenthFrameStrike");
 			gameIsHalted = (Boolean) obj.get("gameIsHalted");
 			canThrowAgain = (Boolean) obj.get("canThrowAgain");
 			frameNumber = Math.toIntExact((long)obj.get("frameNumber"));
 			gameNumber = Math.toIntExact((long)obj.get("gameNumber"));
-
+			partyAssigned = true;
 			unPauseGame();
 		} catch (Exception e) {
 			System.err.println("File Error");
@@ -565,57 +558,27 @@ public class Lane extends Thread implements PinsetterObserver {
 	 */
 	public JSONObject collectData() {
 		JSONObject LaneData = new JSONObject();
-
 		JSONArray partyData = new JSONArray();
 		JSONArray scoreData = new JSONArray();
 		party.getMembers().forEach((v) -> {
 			Bowler bowler = (Bowler) v;
-			int[] ans = (int[]) scores.get(bowler);
-			JSONArray score = new JSONArray();
-			for(int j = 0; j < ans.length; j++) {
-				score.add(ans[j]);
-			}
-			scoreData.add(score);
+			scoreData.add(LaneJsonFile.intArrayToJson((int[]) scores.get(bowler)));
 			partyData.add(bowler.getNickName());
 		});
 		LaneData.put("party", partyData);
 		LaneData.put("scores", scoreData);
-
 		LaneData.put("currentThrower", currentThrower.getNickName());
-
-		JSONArray curScoreData = new JSONArray();
-		for(int score: curScores){
-			curScoreData.add(score);
-		}
-		LaneData.put("curScores", curScoreData);
-
-		JSONArray cumulScoreData = new JSONArray();
-		for(int[] cumulScore: currentCumulScores.getCumulScores()){
-			JSONArray cumScore = new JSONArray();
-			for(int score: cumulScore){
-				cumScore.add(score);
-			}
-			cumulScoreData.add(cumScore);
-		}
-		LaneData.put("cumulScores", cumulScoreData);
-
-		JSONArray finalScoreData = new JSONArray();
-
-		for(int[] finalScore: finalScores){
-			JSONArray fScore = new JSONArray();
-			for(int score: finalScore){
-				fScore.add(score);
-			}
-			finalScoreData.add(fScore);
-		}
-		LaneData.put("finalScores", finalScoreData);
-
+		LaneData.put("curScores", LaneJsonFile.intArrayToJson(curScores));
+		LaneData.put("cumulScores", LaneJsonFile.int2DArrayToJson(currentCumulScores.getCumulScores()));
+		LaneData.put("finalScores", LaneJsonFile.int2DArrayToJson(finalScores));
 		Date date = Calendar.getInstance().getTime();
 		DateFormat dateFormat = new SimpleDateFormat("hh:mm dd/mm/yyyy");
 		String pauseTime = dateFormat.format(date);
 		this.pauseTime = pauseTime;
 		LaneData.put("pauseTime", pauseTime);
 		LaneData.put("bowlIndex", bowlIndex);
+		LaneData.put("ball", ball);
+		LaneData.put("tenthFrameStrike", tenthFrameStrike);
 		LaneData.put("gameIsHalted", gameIsHalted);
 		LaneData.put("canThrowAgain", canThrowAgain);
 		LaneData.put("frameNumber", frameNumber);
@@ -640,11 +603,11 @@ public class Lane extends Thread implements PinsetterObserver {
 	 * Resume the execution of this game
 	 */
 	public void unPauseGame() {
-		try{
-			LaneJsonFile.delParty(((Bowler) party.getMembers().get(0)).getNickName(), pauseTime);
-		} catch (Exception e) {
-			System.err.println("File Error");
-		}
+//		try{
+//			LaneJsonFile.delParty(((Bowler) party.getMembers().get(0)).getNickName(), pauseTime);
+//		} catch (Exception e) {
+//			System.err.println("File Error");
+//		}
 		gameIsHalted = false;
 		publish();
 	}

@@ -47,6 +47,9 @@ public class LaneJsonFile {
 		catch (IOException e) { }
 	}
 
+	/**
+	 * returns name of all party along with the time when game was paused
+	 */
 	public static Vector getAllParty()
 		throws IOException, FileNotFoundException {
 		JSONArray data = loadData();
@@ -60,6 +63,11 @@ public class LaneJsonFile {
 		return partydb;
 	}
 
+	/**
+	 * returns json object of a team
+	 * @param name is the team name which is nick name of first member of team
+	 * @param time is the pause time
+	 */
 	public static JSONObject getParty(String name, String time)
 			throws IOException, FileNotFoundException {
 		JSONArray data = loadData();
@@ -74,6 +82,11 @@ public class LaneJsonFile {
 		return (new JSONObject());
 	}
 
+	/**
+	 * returns list of all bowlers of the team
+	 * @param name is the name of team
+	 * @param time is the pause time
+	 */
 	public static Vector getBowlers(String name, String time)
 			throws IOException, FileNotFoundException {
 		JSONArray data = loadData();
@@ -92,6 +105,11 @@ public class LaneJsonFile {
 		return bowlerdb;
 	}
 
+	/**
+	 * delets the party from Lane.json
+	 * @param name is the name of the party
+	 * @param time is the game's pause time
+	 */
 	public static void delParty(String name, String time)
 			throws IOException, FileNotFoundException {
 		JSONArray data = loadData();
@@ -106,6 +124,51 @@ public class LaneJsonFile {
 			newData.add(object);
 		}
 		dumpData(newData);
+	}
+
+	/**
+	 * converts int[] to json array
+	 */
+	public static JSONArray intArrayToJson (int[] elements) {
+		JSONArray arr = new JSONArray();
+		for (int i = 0; i < elements.length; i++) {
+			arr.add(elements[i]);
+		}
+		return arr;
+	}
+
+	/**
+	 * converts int[][] to json array
+	 */
+	public static JSONArray int2DArrayToJson (int[][] elements) {
+		JSONArray arr = new JSONArray();
+		for (int i = 0; i < elements.length; i++) {
+			arr.add(intArrayToJson(elements[i]));
+		}
+		return arr;
+	}
+
+	/**
+	 * converts json array to int[]
+	 */
+	public static int[] parse1DArray(JSONArray array) {
+		int[] arr = new int[array.size()];
+		for(int i = 0; i < array.size(); i++) {
+			arr[i] = Math.toIntExact((long)(array.get(i)));
+		}
+		return arr;
+	}
+
+	/**
+	 * converts json array to int[][]
+	 */
+	public static int[][] parse2DArray(JSONArray array) {
+		int[][] arr = new int[array.size()][];
+		for(int i = 0; i < array.size(); i++) {
+			JSONArray newArray = (JSONArray)array.get(i);
+			arr[i] = parse1DArray(newArray);
+		}
+		return arr;
 	}
 
 }
